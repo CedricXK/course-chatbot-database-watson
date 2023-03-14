@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ICR_NAMESPACE: solution-tutorials
-      ICR_REPOSITORY: tutorial-slack-chatbot-database
+      ICR_REPOSITORY: tutorial-course-chatbot-database
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
