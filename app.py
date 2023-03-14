@@ -29,14 +29,14 @@ app = APIFlask(__name__, title=API_TITLE, version=API_VERSION)
 load_dotenv()
 
 # the secret API key, plus we need a username in that record
-API_TOKEN="{{'{0}':'appuser'}}".format(os.getenv('API_TOKEN'))
+API_TOKEN="{{'{0}':'appuser'}}".format(os.getenv('EfaU8KdltEh7D7dptYOlNRG24Ksnr3_gXVaaN8s_mwy8'))
 #convert to dict:
 tokens=ast.literal_eval(API_TOKEN)
 
 # database URI
-DB2_URI=os.getenv('DB2_URI')
+DB2_URI=os.getenv('ibm_db_sa://mqm34233:PorBw23UQdYBlNpE@0c77d6f2-5da9-48a9-81f8-86b520b87518.bs2io90l08kqb1od8lcg.databases.appdomain.cloud:31198/bludb?Security=SSL')
 # optional table arguments, e.g., to set another table schema
-ENV_TABLE_ARGS=os.getenv('TABLE_ARGS')
+ENV_TABLE_ARGS=os.getenv('COURSES')
 TABLE_ARGS=None
 if ENV_TABLE_ARGS:
     TABLE_ARGS=ast.literal_eval(ENV_TABLE_ARGS)
@@ -83,7 +83,7 @@ app.config['SERVERS'] = [
 
 
 # set how we want the authentication API key to be passed
-auth=HTTPTokenAuth(scheme='ApiKey', header='API_TOKEN')
+auth=HTTPTokenAuth(scheme='vI44vviUaCnjMyR-PFp5nGihNIVgf_FYrSVZR_qJ3i4E', header='EfaU8KdltEh7D7dptYOlNRG24Ksnr3_gXVaaN8s_mwy8')
 
 # configure SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI']=DB2_URI
