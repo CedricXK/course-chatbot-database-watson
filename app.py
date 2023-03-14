@@ -19,7 +19,7 @@ from apiflask.validators import Length, Range
 from flask_sqlalchemy import SQLAlchemy
 
 # Set how this API should be titled and the current version
-API_TITLE='Events API for Watson Assistant'
+API_TITLE='Courses matching API for Watson Assistant'
 API_VERSION='1.0.1'
 
 # create the app
@@ -62,8 +62,8 @@ app.config['SERVERS'] = [
             },
             "region":
             {
-                "default": "us-south",
-                "description": "the deployment region, e.g., us-south"
+                "default": "eu-gb",
+                "description": "the deployment region, e.g., eu-gb"
             }
         }
     },
@@ -93,20 +93,18 @@ db = SQLAlchemy(app)
 
 
 # sample records to be inserted after table recreation
-sample_events=[
+sample_courses=[
     {
-        "shortname":"Think 2022",
-        "location": "Boston, US",
-        "begindate":"2022-05-10",
-        "enddate":"2022-05-11",
-        "contact": "https://www.ibm.com/events/think/"
+        "Name":"Getting Started with Enterprise-grade AI",
+        "Introduce": "This course covers the foundations of Artificial Intelligence for business, including the following topics: AI Evolution, AI Industry Adoption Trends, Natural Language Processing and Virtual Agents.",
+        "Link":"https://keyskill-clms.comprehend.ibm.com/course/view.php?id=236",
+        "Tags":"NLP, AI evolution, Virtual agents"
     },
     {
-        "shortname":"IDUG EMEA 2022",
-        "location": "Edinburgh, Scotland",
-        "begindate":"2022-10-22",
-        "enddate":"2022-10-26",
-        "contact": "https://www.idug.org"
+        "Name":"OpenDS4All",
+        "Introduce": "OpenDS4All is a project created to accelerate the creation of data science curriculum at academic institutions. The project hosts educational modules that may be used as building blocks for a data science curriculum.",
+        "Link":"https://github.com/odpi/OpenDS4All/",
+        "Tags":"OpenDS4All, Data science, Jupyter notebooks, Data engineering"
     },
 
 ]
@@ -114,40 +112,37 @@ sample_events=[
 
 # Schema for table "EVENTS"
 # Set default schema to "EVENTS"
-class EventModel(db.Model):
-    __tablename__ = 'EVENTS'
+class CourseModel(db.Model):
+    __tablename__ = 'COURSES'
     __table_args__ = TABLE_ARGS
     eid = db.Column('EID',db.Integer, primary_key=True)
-    shortname = db.Column('SHORTNAME',db.String(20))
-    location= db.Column('LOCATION',db.String(60))
-    begindate = db.Column('BEGINDATE', db.Date)
-    enddate = db.Column('ENDDATE', db.Date)
-    contact = db.Column('CONTACT',db.String(255))
+    Name = db.Column('NAME',db.String(255))
+    Introduce= db.Column('INTRODUCE',db.String(255))
+    Link = db.Column('LINK', db.String(255))
+    Tags = db.Column('TAGS', db.String(255))
 
 # the Python output for Events
-class EventOutSchema(Schema):
+class CourseOutSchema(Schema):
     eid = Integer()
-    shortname = String()
-    location = String()
-    begindate = Date()
-    enddate = Date()
-    contact = String()
+    Name = String()
+    Introduce = String()
+    Link = String()
+    Tags = String()
 
 # the Python input for Events
-class EventInSchema(Schema):
-    shortname = String(required=True, validate=Length(0, 20))
-    location = String(required=True, validate=Length(0, 60))
-    begindate = Date(required=True)
-    enddate = Date(required=True)
-    contact = String(required=True, validate=Length(0, 255))
+class CourseInSchema(Schema):
+    Name = String(required=True, validate=Length(0, 255))
+    Introduce = String(required=True, validate=Length(0, 255))
+    Link = String(required=True, validate=Length(0, 255))
+    Tags = String(required=True, validate=Length(0, 255))
 
 # use with pagination
-class EventQuerySchema(Schema):
+class CourseQuerySchema(Schema):
     page = Integer(load_default=1)
     per_page = Integer(load_default=20, validate=Range(max=30))
 
-class EventsOutSchema(Schema):
-    events = List(Nested(EventOutSchema))
+class CoursesOutSchema(Schema):
+    courses = List(Nested(CourseOutSchema))
     pagination = Nested(PaginationSchema)
 
 # register a callback to verify the token
@@ -159,71 +154,71 @@ def verify_token(token):
         return None
 
 # retrieve a single event record by EID
-@app.get('/events/eid/<int:eid>')
-@app.output(EventOutSchema)
+@app.get('/courses/eid/<int:eid>')
+@app.output(CourseOutSchema)
 @app.auth_required(auth)
-def get_event_eid(eid):
-    """Event record by EID
-    Retrieve a single event record by its EID
+def get_course_eid(eid):
+    """Course record by EID
+    Retrieve a single course record by its EID
     """
-    return EventModel.query.get_or_404(eid)
+    return CourseModel.query.get_or_404(eid)
 
 # retrieve a single event record by name
-@app.get('/events/name/<string:short_name>')
-@app.output(EventOutSchema)
+@app.get('/courses/name/<string:Name>')
+@app.output(CourseOutSchema)
 @app.auth_required(auth)
-def get_event_name(short_name):
-    """Event record by name
-    Retrieve a single event record by its short name
+def get_course_name(Name):
+    """Course record by name
+    Retrieve a single course record by its Name
     """
-    search="%{}%".format(short_name)
-    return EventModel.query.filter(EventModel.shortname.like(search)).first()
+    search="%{}%".format(Name)
+    return CourseModel.query.filter(CourseModel.Name.like(search)).first()
 
 
 # get all events
-@app.get('/events')
-@app.input(EventQuerySchema, 'query')
-#@app.input(EventInSchema(partial=True), location='query')
-@app.output(EventsOutSchema)
+@app.get('/courses')
+@app.input(CourseQuerySchema, 'query')
+#@app.input(CourseInSchema(partial=True), location='query')
+@app.output(CoursesOutSchema)
 @app.auth_required(auth)
-def get_events(query):
-    """all events
-    Retrieve all event records
+def get_courses(query):
+    """all courses
+    Retrieve all course records
     """
-    pagination = EventModel.query.paginate(
+    pagination = CourseModel.query.paginate(
         page=query['page'],
         per_page=query['per_page']
     )
     return {
-        'events': pagination.items,
+        'courses': pagination.items,
         'pagination': pagination_builder(pagination)
     }
 
 # create an event record
-@app.post('/events')
-@app.input(EventInSchema, location='json')
-@app.output(EventOutSchema, 201)
+@app.post('/courses')
+@app.input(CourseInSchema, location='json')
+@app.output(CourseOutSchema, 201)
 @app.auth_required(auth)
-def create_event(data):
-    """Insert a new event record
-    Insert a new event record with the given attributes. Its new EID is returned.
+def create_course(data):
+    """Insert a new course record
+    Insert a new course record with the given attributes. Its new EID is returned.
     """
-    event = EventModel(**data)
-    db.session.add(event)
+    course = CourseModel(**data)
+    db.session.add(course)
     db.session.commit()
-    return event
+    return course
 
 
 # delete an event record
-@app.delete('/events/eid/<int:eid>')
+@app.delete('/courses/eid/<int:eid>')
 @app.output({}, 204)
 @app.auth_required(auth)
-def delete_event(eid):
-    """Delete an event record by EID
-    Delete a single event record identified by its EID.
+def delete_course(eid):
+    """Delete an course record by EID
+    Delete a single course record identified by its EID.
     """
-    event = EventModel.query.get_or_404(eid)
-    db.session.delete(event)
+    course = CourseModel.query.get_or_404(eid)
+    db.session.delete(course)
     db.session.commit()
     return ''
 
@@ -240,9 +235,9 @@ def create_database(query):
     if query['confirmation'] is True:
         db.drop_all()
         db.create_all()
-        for e in sample_events:
-            event = EventModel(**e)
-            db.session.add(event)
+        for e in sample_courses:
+            course = CourseModel(**e)
+            db.session.add(course)
         db.session.commit()
     else:
         abort(400, message='confirmation is missing',
@@ -258,7 +253,7 @@ def print_default():
     health check
     """
     # returning a dict equals to use jsonify()
-    return {'message': 'This is the Events API server'}
+    return {'message': 'This is the Courses API server'}
 
 
 # Start the actual app
