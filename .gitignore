@@ -161,4 +161,4 @@ cython_debug/
 #
 
 # from tutorial
-slackbotkey.json
+coursebotkey.json
