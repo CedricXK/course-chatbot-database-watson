@@ -7,7 +7,7 @@ on:
     paths-ignore:
       - 'README.md'
       - 'images/**'
-      - slackbot-openapi-spec.json
+      - coursebot-openapi-spec.json
 jobs:
   publish_to_registry:
     name: Build and push image to registry
