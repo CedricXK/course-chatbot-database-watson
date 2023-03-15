@@ -49,3 +49,12 @@ RUN apt-get update && \
 # copy in the rest of the app
 COPY ./ ./
 ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:8080","app:app"]
+
+RUN apt-get update && apt-get install -y gunicorn
+RUN pip install gunicorn
+
+ENV PATH="${PATH}:/path/to/gunicorn"
+
+RUN pip install python-dotenv
+RUN pip install apiflask
+RUN pip install flask_sqlalchemy
